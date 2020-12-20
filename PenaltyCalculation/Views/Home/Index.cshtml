@@ -1,0 +1,98 @@
+﻿@using PenaltyCalculation.Models
+@model PenaltyViewModel
+@{
+    ViewBag.Title = "Home Page";
+}
+
+<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+<script src="~/Scripts/jquery-1.10.2.js"></script>
+<script src="~/Scripts/jquery-ui-1.11.4.js"></script>
+<script src="~/Scripts/jquery-ui-timepicker-addon.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $(".datepicker").datetimepicker({
+            dateFormat: "yy-mm-dd",
+            timeFormat: "HH:mm:ss",
+            defaultDate: new Date(),
+            changeMonth: true,
+            changeYear: true,
+            showSecond: false
+        });
+
+        $("#BookId").change(function () {
+            $("#businessDays").text("");
+            $("#penalty").text("");
+
+            $.ajax({
+                url: "/Home/GetBookDetails",
+                type: "POST",
+                data: { bookId: $(this).val() },
+                datatype: "json",
+                success: function (data) {
+                    $("#CheckedOutDate").datepicker("setDate", data.CheckedOutDate ? new Date(data.CheckedOutDate): null);
+                    $("#ReturnedDate").datepicker("setDate", data.ReturnedDate ? new Date(data.ReturnedDate) : null);
+                }
+            });
+        });
+    });
+</script>
+
+<div class="row">
+    <h2>Penalty Calculation</h2>
+    <hr />
+
+    @using (Html.BeginForm())
+    {
+        <div class="col-md-12">
+            <div class="form-horizontal">
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.BookId, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-5">
+                        @Html.DropDownListFor(model => model.BookId, (SelectList)ViewBag.Books, "Select One", new { @class = "form-control dropdown" })
+                        @Html.ValidationMessageFor(model => model.BookId, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.CountryId, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-5">
+                        @Html.DropDownListFor(model => model.CountryId, (SelectList)ViewBag.Countries, "Select One", new { @class = "form-control dropdown" })
+                        @Html.ValidationMessageFor(model => model.CountryId, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                <div class="form-group">
+                    @Html.LabelFor(model => model.CheckedOutDate, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        @Html.EditorFor(model => model.CheckedOutDate, new { htmlAttributes = new { @class = "form-control datepicker" } })
+                        @Html.ValidationMessageFor(model => model.CheckedOutDate, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ReturnedDate, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        @Html.EditorFor(model => model.ReturnedDate, new { htmlAttributes = new { @class = "form-control datepicker" } })
+                        @Html.ValidationMessageFor(model => model.ReturnedDate, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <hr />
+
+                <div class="col-md-10">
+                    <p>Calculated Business Days: <b><span id="businessDays">@ViewBag.CalculatedBusinessDays</span></b></p>
+                    <p>Calculated Penalty: <b><span id="penalty">@ViewBag.CalculatedPenalty</span></b></p>
+                </div>
+
+                <div class="col-md-7 text-right">
+                    <button type="submit" class="btn btn-success">Calculate</button>
+                </div>
+
+            </div>
+        </div>
+    }
+</div>
